@@ -4,7 +4,7 @@ plt.style.use('science')
 import time
 
 #  start = time.time()
-data_bin = np.fromfile("results.bin", dtype = np.int32)
+data_bin = np.fromfile("results.bin", dtype = np.int8)
 data = data_bin.reshape(-1,1000)
 #  end = time.time()
 #  print(end - start)

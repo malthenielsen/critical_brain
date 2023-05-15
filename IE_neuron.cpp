@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <omp.h>
 #include <fstream>
+#include <cstdint>
 using namespace std;
 
 int main(){
@@ -38,7 +39,7 @@ int main(){
   vector<float> Vm_tmp;
   Vm_tmp.resize(N,0.0);
 
-  vector<int> state;
+  vector<int8_t> state;
   state.resize(N,0);
   int steps = 50000;
 
@@ -87,7 +88,7 @@ int main(){
     // for (int j = 0; j < 50; j++){
     //   std::cout << state[j] << " ";
     // }
-    outFile.write(reinterpret_cast<const char*>(state.data()), state.size() * sizeof(int));
+    outFile.write(reinterpret_cast<const char*>(state.data()), state.size() * sizeof(int8_t));
     // for (int j = 0; j < N-1; j++){
       // outfile << state[j] << ",";
     // }

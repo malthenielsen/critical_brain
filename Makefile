@@ -14,3 +14,4 @@ $(EXE): $(SRC)
 
 clean:
 	rm -rf $(EXE)
+	rm -rf results.bin
