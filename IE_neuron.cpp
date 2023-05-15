@@ -11,10 +11,11 @@ using namespace std;
 int main(){
   int num_threads = 7;
   int N = 1000;
-  int numOnes = N/6;
-  float mu = 1;
+  int numOnes = N/5;
+  float mu = 0.01;
   float jj = 10;
-  float gc = 10;
+  float gc = 3.5;
+  float drive = 0.01/(float)N;
 
   vector<int> W;
   W.resize(N,0);
@@ -39,20 +40,25 @@ int main(){
 
   vector<int> state;
   state.resize(N,0);
-  int steps = 10000;
+  int steps = 50000;
 
-  std::ofstream outfile("results.txt");
-  std::poisson_distribution<> distr(3);
+  // std::ofstream outfile("results.txt");
+  std::ofstream outFile("results.bin", std::ios::binary | std::ios::app);
+  std::uniform_real_distribution<float> uni(0.0, 1.0);
   // outfile.open();
 
   for (int i = 0; i < steps; i++){
-    int n_input = distr(gen);
-    for (int h = 0; h < n_input; h++){
-      int index = distrib(gen);
-      state[index] = 1;
-    }
-    // std::cout << "\n";
 
+
+    for (int h = 0; h < N-1; h++){
+      float prob = uni(gen);
+      // std::cout << prob << "  " << drive << std::endl;
+      if (prob < drive){
+        state[h] = 1;
+        
+      }
+    }
+      
     #pragma omp parallel for num_threads(num_threads)
     for (int j = 0; j < N-1; j++){
       float cons = mu*Vm[j];
@@ -62,13 +68,16 @@ int main(){
         if (k == j){ 
           mul = 0;
         }
-        sum = sum + (jj*W[k] - jj*gc*(1 - W[k]))*state[k]*mul;
+        sum = sum + (jj*(1 - W[k])/(float)N - jj*gc/(float)N*W[k])*state[k]*mul;
       }
       Vm_tmp[j] = (cons + sum) * (1 - state[j]);
+      // std::cout << (1 - state[j]) << std::endl;
     }
     std::swap(Vm, Vm_tmp);
     for (int j = 0; j < N-1; j++){
-      if (Vm[j] > 1){
+      float prob = uni(gen);
+      // std::cout << Vm[j] << "   ";
+      if (Vm[j] > prob){
         state[j] = 1;
       }
       else{
@@ -78,14 +87,15 @@ int main(){
     // for (int j = 0; j < 50; j++){
     //   std::cout << state[j] << " ";
     // }
-    for (int j = 0; j < N-1; j++){
-      outfile << state[j] << ",";
-    }
-    outfile << n_input;
-    outfile << "\n";
+    outFile.write(reinterpret_cast<const char*>(state.data()), state.size() * sizeof(int));
+    // for (int j = 0; j < N-1; j++){
+      // outfile << state[j] << ",";
+    // }
+    // outfile << "\n";
 
   }
-  outfile.close();
+  // outfile.close();
+  outFile.close();
   
 
 }
